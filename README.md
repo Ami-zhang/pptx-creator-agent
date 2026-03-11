@@ -123,6 +123,12 @@ pptx-creator-agent/
 ├── .github/
 │   └── agents/
 │       └── pptx-creator.agent.md   # Agent 定义
+├── examples/                        # 完整示例
+│   ├── README.md                    # 示例说明
+│   └── ai-development/              # AI发展演示文稿示例
+│       ├── README.md
+│       ├── create_presentation.py
+│       └── AI-Development-Presentation.pptx
 ├── packages/                        # 离线安装包
 │   ├── README.md                    # 安装说明
 │   ├── python_pptx-1.0.2-py3-none-any.whl
