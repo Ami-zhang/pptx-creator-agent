@@ -13,8 +13,19 @@
 
 ### 1. 安装依赖
 
+**方式 A: 在线安装（推荐）**
+
 ```bash
 pip install python-pptx
+```
+
+**方式 B: 离线安装（Windows 64位 + Python 3.11）**
+
+本项目提供了离线安装包，详见 [packages/README.md](packages/README.md)：
+
+```bash
+cd packages
+pip install *.whl
 ```
 
 ### 2. 安装 Agent
@@ -112,6 +123,13 @@ pptx-creator-agent/
 ├── .github/
 │   └── agents/
 │       └── pptx-creator.agent.md   # Agent 定义
+├── packages/                        # 离线安装包
+│   ├── README.md                    # 安装说明
+│   ├── python_pptx-1.0.2-py3-none-any.whl
+│   ├── lxml-6.0.2-cp311-cp311-win_amd64.whl
+│   ├── pillow-12.1.1-cp311-cp311-win_amd64.whl
+│   ├── typing_extensions-4.15.0-py3-none-any.whl
+│   └── xlsxwriter-3.2.9-py3-none-any.whl
 ├── scripts/
 │   └── pptx_template.py            # Python 模板库
 ├── requirements.txt                 # 依赖
