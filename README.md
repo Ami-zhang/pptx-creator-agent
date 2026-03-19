@@ -6,12 +6,15 @@
 
 - 🎨 **智能设计** - 根据内容主题自动选择配色方案（科技/商务/企业浅色）
 - 📝 **多种输入** - 支持直接文本、Markdown 文件、现有 PPTX 模板等
+- 🗂️ **规划先行** - 先输出幻灯片规划表，再进入代码生成，降低返工成本
 - 🎯 **专业模板** - 提供多种幻灯片布局（标题页、内容页、卡片页、表格页、总结页）
 - 🧩 **元素级 Helper** - 12 个精细构建函数（背景块、文本框、表格、代码块、徽章等），支持复杂混合布局
+- ✂️ **分块生成** - 大型演示文稿按批次生成 slide builders，避免一次性输出过长
 - 📊 **表格支持** - 创建表格、合并单元格、自定义样式，满足企业 PPT 需求
 - 🀄 **中文友好** - 内置微软雅黑/等线等 CJK 字体配置，告别 Arial 乱码
 - 🔍 **模板分析** - 分析现有 PPTX 结构（shapes、表格布局、样式），辅助复刻
 - 🛡️ **代码卫生** - 内置 `sanitize_script()` 自动检测并修复 Unicode 引号等常见语法问题
+- ➕ **追加模式** - 扩展已有脚本时优先追加 builders，而不是整份重写
 - 🔧 **易于扩展** - 模块化的 Python 代码，方便自定义
 
 ## 安装
@@ -71,9 +74,27 @@ pip install *.whl
 - 预期成果
 ```
 
+### Agent 推荐工作流
+
+更新后的 `@pptx-creator` 默认遵循以下流程：
+
+1. 检查 `python-pptx` 环境是否可用
+2. 分析输入内容；如果源文档超过 300 行，先提取结构化摘要
+3. 输出幻灯片规划表（页码 / 标题 / 布局类型 / 关键内容）
+4. 选择设计风格和配色方案
+5. 判断生成模式：简单页面可用整页模板，复杂混合布局优先使用 `scripts/pptx_helpers.py`
+6. 生成脚本骨架和 slide builders
+7. 对大型演示文稿分批生成并追加到同一脚本
+8. 执行前进行语法和 Unicode 引号检查
+9. 运行脚本并验证输出文件大小、页数是否符合规划
+
+这意味着 agent 不再默认尝试“读取全部内容后一次性输出完整脚本”。对于超过 12 页或包含表格 + 代码块 + 信息框等混合布局的 PPT，优先采用分批生成策略。
+
 ### 使用 Python 脚本
 
 #### 方式 A: 整页级模板 (`pptx_template.py`)
+
+适用于结构简单、版式相对统一的演示文稿，例如：标题页 + 内容页 + 表格页 + 总结页。
 
 ```python
 from scripts.pptx_template import (
@@ -108,7 +129,7 @@ prs.save("output.pptx")
 
 #### 方式 B: 元素级 Helper (`pptx_helpers.py`)
 
-适用于需要精细控制布局的复杂演示文稿：
+适用于需要精细控制布局的复杂演示文稿，也是 `@pptx-creator` 当前对复杂场景的默认推荐方案：
 
 ```python
 from scripts.pptx_helpers import *
@@ -142,6 +163,18 @@ sn(s, 1, 10, C=C)
 # 保存
 save_pptx(prs, 'output.pptx')
 ```
+
+### 如何选择模板还是 Helper
+
+| 场景 | 推荐方式 | 原因 |
+|------|----------|------|
+| 5-8 页的标准汇报 | `pptx_template.py` | 页面结构单一，生成速度快 |
+| 单页主要是列表或单表格 | `pptx_template.py` | 整页级 API 足够 |
+| 复杂技术汇报、市场调研、问题复盘 | `pptx_helpers.py` | 需要混合布局和元素级控制 |
+| 超过 8 页且页面样式不统一 | `pptx_helpers.py` | 更适合 builder 模式和分批生成 |
+| 需要后续继续追加页面 | `pptx_helpers.py` | 便于追加新的 slide builder |
+
+经验上，超过 12 页的大型 deck 应采用“规划表 + 脚本骨架 + 分批 slide builders”的方式，而不是一次性生成整份脚本。
 
 ## 配色方案
 
@@ -218,6 +251,45 @@ save_pptx(prs, 'output.pptx')
 | `save_pptx()` | 保存并打印信息 | `prs, path` |
 | `sanitize_script()` | 检测并修复 Unicode 引号等语法问题 | `path` |
 
+## 推荐生成模式
+
+### 小型 Deck（<= 12 页）
+
+可以单次生成完整脚本，但仍建议先输出规划表。
+
+推荐顺序：
+
+1. 内容分析
+2. 幻灯片规划
+3. 生成脚本
+4. `sanitize_script()` 或 `ast.parse()` 校验
+5. 运行脚本生成 `.pptx`
+
+### 大型 Deck（> 12 页）
+
+推荐分块生成，每批不超过 8 页：
+
+1. 提取摘要或保留关键数据片段
+2. 输出完整幻灯片规划表
+3. 生成脚本骨架（imports、`create_prs()`、builders 列表、`main()`）
+4. 分批生成 slide builders
+5. 每批追加后立即做语法检查
+6. 最终统一执行并验证输出文件
+
+这种方式可以显著降低 prompt 过长和中途失败后全部重来的风险。
+
+## 追加模式
+
+当你需要在已有 PPT 脚本基础上继续扩展时，推荐按以下方式工作：
+
+1. 先读取现有脚本，确认配色方案、命名规则和 builders 列表
+2. 仅追加新的 slide builder 函数
+3. 更新 builders 列表或主流程
+4. 不改动已完成的页面，除非存在明确 bug
+5. 追加后重新执行语法检查和生成验证
+
+这比整份重写更稳定，也更适合多轮迭代的项目汇报。
+
 ## 目录结构
 
 ```
@@ -241,8 +313,11 @@ pptx-creator-agent/
 ├── scripts/
 │   ├── pptx_template.py             # 整页级模板库
 │   ├── pptx_helpers.py              # 元素级 Helper 函数库
+│   ├── example-presentation.pptx    # 模板方式示例输出
 │   ├── example_helpers.py           # pptx_helpers 示例脚本
-│   └── example-helpers.pptx         # 示例输出 (8页)
+│   ├── example-helpers.pptx         # Helper 示例输出 (8页)
+│   ├── validate_15page_deck.py      # 16页分块生成验证脚本
+│   └── validate-15page-deck.pptx    # 验证输出 (16页)
 ├── requirements.txt                 # 依赖
 └── README.md                        # 说明文档
 ```
@@ -319,6 +394,27 @@ python example_helpers.py
 - 富文本列表（`rl`）
 - 章节标记（`act_badge`）
 - 页码标注（`sn`）
+
+### 分块生成验证示例
+
+```bash
+cd scripts
+python validate_15page_deck.py
+```
+
+将生成 `validate-15page-deck.pptx`（16 页），用于验证以下工作流是否可稳定执行：
+- 幻灯片规划表先行
+- builders 按批次生成（每批 8 页）
+- `sanitize_script()` 执行前校验
+- 最终输出页数与规划一致
+
+## 常见建议
+
+- 对企业中文汇报，优先使用 `create_prs('corporate')`
+- 对复杂页面，不要在脚本中重复定义颜色常量和 helper 函数，直接复用 `scripts/pptx_helpers.py`
+- 对长 Markdown 文档，先提炼结构化摘要，再交给 agent 生成脚本
+- 发现脚本中混入 Unicode 弯引号时，执行前调用 `sanitize_script()`
+- 对超过 12 页的 deck，优先用分批 builder 模式，不要一次性生成整份脚本
 
 ## License
 

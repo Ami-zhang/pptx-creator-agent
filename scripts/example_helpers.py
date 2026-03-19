@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-pptx_helpers 示例 — 使用元素级 helper 生成 8 页演示文稿
+pptx_helpers 示例 — 使用 builder 风格生成 8 页演示文稿
 
 演示 pptx_helpers.py 的所有核心 API:
   add_bg, tb, ml, rl, sc, ct, ft, code, hbox, badge, bar, act_badge, sn
+
+同时演示推荐工作流:
+   1. 先定义 slide plan
+   2. 再编写具名 slide builders
+   3. 按批次执行 builders
 
 用法:
     python example_helpers.py
@@ -15,11 +20,36 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from pptx_helpers import *
 
-TOTAL = 8
+SLIDE_PLAN = [
+   (1, '封面', '全屏标题', '介绍 helper 库定位与核心卖点'),
+   (2, '目录', '目录页', '概览 6 个示例主题'),
+   (3, '基础元素演示', '混合布局', '展示 add_bg / tb / ml'),
+   (4, '表格演示', '表格 + 说明框', '展示 ct / ft / sc'),
+   (5, '代码块与信息框', '双栏对比', '展示 code / hbox'),
+   (6, '徽章与章节标记', '组件展示', '展示 badge / act_badge'),
+   (7, '富文本列表与配色', '列表 + 表格 + 代码', '展示 rl / create_prs'),
+   (8, '结束页', '全屏收束', '总结 helper 库适用场景'),
+]
+
+TOTAL = len(SLIDE_PLAN)
+
+
+def print_slide_plan():
+   """打印规划表，演示推荐的 planning-first 工作流。"""
+   print('Slide plan:')
+   for page, title, layout, content in SLIDE_PLAN:
+      print(f'  {page:02d}. {title} | {layout} | {content}')
+
+
+def run_builder_batch(prs, C, batch_name, builders):
+   """按批次执行 slide builders。"""
+   print(f'Running {batch_name} with {len(builders)} slides...')
+   for builder in builders:
+      builder(prs, C)
 
 
 # ──────── S1: 封面 ────────
-def s1(prs, C):
+def build_slide_01_cover(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     add_bg(s, 0, 0, SLIDE_W, SLIDE_H, C['navy_dark'])
     add_bg(s, 0, Emu(2400000), SLIDE_W, Emu(2600000), C['navy'])
@@ -38,7 +68,7 @@ def s1(prs, C):
 
 
 # ──────── S2: 目录 ────────
-def s2(prs, C):
+def build_slide_02_agenda(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u76ee\u5f55', C=C)
     items = [
@@ -60,7 +90,7 @@ def s2(prs, C):
 
 
 # ──────── S3: 基础元素 ────────
-def s3(prs, C):
+def build_slide_03_basics(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u57fa\u7840\u5143\u7d20\u6f14\u793a', 'add_bg + tb + ml', C=C)
     act_badge(s, Emu(350000), Emu(880000), '\u4e00', '\u57fa\u7840\u5143\u7d20', C['teal'], C=C)
@@ -115,7 +145,7 @@ def s3(prs, C):
 
 
 # ──────── S4: 表格 ────────
-def s4(prs, C):
+def build_slide_04_tables(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u8868\u683c\u6f14\u793a', 'ct + ft + sc', C=C)
     act_badge(s, Emu(350000), Emu(880000), '\u4e8c', '\u8868\u683c\u4e0e\u5355\u5143\u683c', C['navy'], C=C)
@@ -161,7 +191,7 @@ def s4(prs, C):
 
 
 # ──────── S5: 代码块与信息框 ────────
-def s5(prs, C):
+def build_slide_05_code_and_boxes(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u4ee3\u7801\u5757\u4e0e\u4fe1\u606f\u6846', 'code + hbox', C=C)
     act_badge(s, Emu(350000), Emu(880000), '\u4e09', '\u4ee3\u7801\u5757\u4e0e\u4fe1\u606f\u6846', C['amber'], C=C)
@@ -174,10 +204,10 @@ def s5(prs, C):
           '',
           'prs, C = create_prs("navy_teal")',
           '',
-          '# \u521b\u5efa\u5e7b\u706f\u7247',
-          's = prs.slides.add_slide(prs.slide_layouts[6])',
-          'bar(s, "\u6807\u9898", "\u526f\u6807\u9898", C=C)',
-          'sn(s, 1, 10, C)'],
+          'def build_slide_01(prs, C):',
+          '    s = prs.slides.add_slide(prs.slide_layouts[6])',
+          '    bar(s, "\u6807\u9898", "\u526f\u6807\u9898", C=C)',
+          '    sn(s, 1, 10, C=C)'],
          sz=11, C=C)
 
     # hbox \u793a\u4f8b
@@ -210,7 +240,7 @@ def s5(prs, C):
 
 
 # ──────── S6: 徽章与章节标记 ────────
-def s6(prs, C):
+def build_slide_06_badges(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u5fbd\u7ae0\u4e0e\u7ae0\u8282\u6807\u8bb0', 'badge + act_badge', C=C)
     act_badge(s, Emu(350000), Emu(880000), '\u56db', '\u5fbd\u7ae0\u4e0e\u7ae0\u8282\u6807\u8bb0', C['red'], C=C)
@@ -242,7 +272,7 @@ def s6(prs, C):
 
 
 # ──────── S7: 富文本列表 + 配色对比 ────────
-def s7(prs, C):
+def build_slide_07_richtext_and_schemes(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     bar(s, '\u5bcc\u6587\u672c\u5217\u8868 & \u914d\u8272\u65b9\u6848', 'rl + create_prs', C=C)
 
@@ -281,15 +311,17 @@ def s7(prs, C):
           "]",
           "rl(s, l, t, w, h, items, ls=1.5, C=C)",
           "",
-          "# \u5207\u6362\u914d\u8272\u65b9\u6848",
-          "prs, C = create_prs('tech_dark')   # \u6df1\u8272\u79d1\u6280\u98ce",
-          "prs, C = create_prs('corporate')   # \u4f01\u4e1a\u6b63\u5f0f\u98ce"],
+        "# \u6279\u6b21\u6267\u884c builders",
+        "builder_batches = [",
+        "    [build_slide_01, build_slide_02],",
+        "]",
+        "prs, C = create_prs('corporate')   # \u4f01\u4e1a\u6b63\u5f0f\u98ce"],
          sz=10, C=C)
     sn(s, 7, TOTAL, C)
 
 
 # ──────── S8: 结束页 ────────
-def s8(prs, C):
+def build_slide_08_closing(prs, C):
     s = prs.slides.add_slide(prs.slide_layouts[6])
     add_bg(s, 0, 0, SLIDE_W, SLIDE_H, C['navy_dark'])
     add_bg(s, 0, Emu(2600000), SLIDE_W, Emu(50000), C['teal'])
@@ -310,10 +342,25 @@ def s8(prs, C):
 # ═══════════════════════════════════════════════════
 def main():
     prs, C = create_prs('navy_teal')
+    print_slide_plan()
 
-    builders = [s1, s2, s3, s4, s5, s6, s7, s8]
-    for b in builders:
-        b(prs, C)
+    builder_batches = [
+        ('Batch 1', [
+            build_slide_01_cover,
+            build_slide_02_agenda,
+            build_slide_03_basics,
+            build_slide_04_tables,
+        ]),
+        ('Batch 2', [
+            build_slide_05_code_and_boxes,
+            build_slide_06_badges,
+            build_slide_07_richtext_and_schemes,
+            build_slide_08_closing,
+        ]),
+    ]
+
+    for batch_name, builders in builder_batches:
+        run_builder_batch(prs, C, batch_name, builders)
 
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        'example-helpers.pptx')
