@@ -16,7 +16,7 @@ pptx_helpers 示例 — 使用 builder 风格生成 8 页演示文稿
 
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts'))
 
 from pptx_helpers import *
 

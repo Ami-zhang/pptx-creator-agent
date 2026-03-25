@@ -17,6 +17,7 @@ from pptx import Presentation
 from pptx.util import Pt, Emu, Inches
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.oxml.ns import qn
 from lxml import etree
 
@@ -140,7 +141,7 @@ def add_bg(s, l, t, w, h, c):
     Returns:
         shape
     """
-    sh = s.shapes.add_shape(1, l, t, w, h)
+    sh = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, l, t, w, h)
     sh.fill.solid()
     sh.fill.fore_color.rgb = c
     sh.line.fill.background()

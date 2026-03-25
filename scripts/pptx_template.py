@@ -609,8 +609,8 @@ def main():
     
     # 创建演示文稿 (16:9 标准 PowerPoint 默认尺寸)
     prs = Presentation()
-    prs.slide_width = Inches(13.333)
-    prs.slide_height = Inches(7.5)
+    prs.slide_width = 12192000   # 标准 16:9 = Inches(13.333)
+    prs.slide_height = 6858000   # 标准 16:9 = Inches(7.5)
     
     print("创建演示文稿...")
     
@@ -673,7 +673,7 @@ def main():
     print("  ✓ 总结页")
     
     # 保存
-    output_path = os.path.join(os.path.dirname(__file__), "example-presentation.pptx")
+    output_path = os.path.join(os.path.dirname(__file__), '..', 'examples', "example-presentation.pptx")
     prs.save(output_path)
     
     print(f"\n✅ 演示文稿创建成功!")

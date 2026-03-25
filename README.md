@@ -299,6 +299,11 @@ pptx-creator-agent/
 │       └── pptx-creator.agent.md   # Agent 定义
 ├── examples/                        # 完整示例
 │   ├── README.md                    # 示例说明
+│   ├── example_helpers.py           # pptx_helpers 全功能演示脚本
+│   ├── example-helpers.pptx         # Helper 示例输出 (8页)
+│   ├── validate_15page_deck.py      # 16页分块生成验证脚本
+│   ├── validate-15page-deck.pptx    # 验证输出 (16页)
+│   ├── example-presentation.pptx    # 整页模板示例输出
 │   └── ai-development/              # AI发展演示文稿示例
 │       ├── README.md
 │       ├── create_presentation.py
@@ -312,12 +317,7 @@ pptx-creator-agent/
 │   └── xlsxwriter-3.2.9-py3-none-any.whl
 ├── scripts/
 │   ├── pptx_template.py             # 整页级模板库
-│   ├── pptx_helpers.py              # 元素级 Helper 函数库
-│   ├── example-presentation.pptx    # 模板方式示例输出
-│   ├── example_helpers.py           # pptx_helpers 示例脚本
-│   ├── example-helpers.pptx         # Helper 示例输出 (8页)
-│   ├── validate_15page_deck.py      # 16页分块生成验证脚本
-│   └── validate-15page-deck.pptx    # 验证输出 (16页)
+│   └── pptx_helpers.py              # 元素级 Helper 函数库
 ├── requirements.txt                 # 依赖
 └── README.md                        # 说明文档
 ```
@@ -372,16 +372,15 @@ prs, C = create_prs(MY_SCHEME)  # 直接传入 dict
 ### 整页级模板示例
 
 ```bash
-cd scripts
-python pptx_template.py
+python scripts/pptx_template.py
 ```
 
-将生成 `example-presentation.pptx` 示例文件。
+将在 `examples/` 下生成 `example-presentation.pptx` 示例文件。
 
 ### 元素级 Helper 示例
 
 ```bash
-cd scripts
+cd examples
 python example_helpers.py
 ```
 
@@ -398,7 +397,7 @@ python example_helpers.py
 ### 分块生成验证示例
 
 ```bash
-cd scripts
+cd examples
 python validate_15page_deck.py
 ```
 
